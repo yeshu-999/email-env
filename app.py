@@ -1,16 +1,28 @@
-import gradio as gr
-from inference import run_inference
+from fastapi import FastAPI
+from pydantic import BaseModel
+from env.email_env import EmailEnv
 
-def process_email(text):
-    result = run_inference(text)
-    return result
+app = FastAPI()
+env = EmailEnv()
 
-demo = gr.Interface(
-    fn=process_email,
-    inputs=gr.Textbox(lines=6, label="📧 Enter Email"),
-    outputs=gr.Textbox(label="📊 Analysis Result"),
-    title="🚀 AI Email Analyzer",
-    description="Spam Detection | Email Scoring | AI Reply Generator"
-)
+class ActionRequest(BaseModel):
+    action: str
 
-demo.launch()
+@app.post("/reset")
+def reset():
+    obs = env.reset()
+    return obs
+
+@app.post("/step")
+def step(action_req: ActionRequest):
+    obs, reward, done, info = env.step(action_req.action)
+    return {
+        "observation": obs,
+        "reward": reward,
+        "done": done,
+        "info": info
+    }
+
+@app.get("/state")
+def state():
+    return env.state()
