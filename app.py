@@ -8,13 +8,10 @@ env = EmailEnv()
 class ActionRequest(BaseModel):
     action: str
 
-# ✅ MUST BE POST (not GET)
 @app.post("/reset")
 def reset():
-    obs = env.reset()
-    return obs
+    return env.reset()
 
-# ✅ MUST BE POST
 @app.post("/step")
 def step(action_req: ActionRequest):
     obs, reward, done, info = env.step(action_req.action)
@@ -25,7 +22,6 @@ def step(action_req: ActionRequest):
         "info": info
     }
 
-# ✅ MUST BE GET
 @app.get("/state")
 def state():
     return env.state()
